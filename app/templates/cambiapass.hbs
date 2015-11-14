@@ -1,0 +1,40 @@
+<div id="form_cambiapass" class="modal fade">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header {{ modal_header_class }}">
+            	{{#if boton_cerrar}}
+			 	<button type="button" class="close" data-dismiss="modal">&times;</button>
+			 	{{/if}}
+			 	<h3 class="modal-title">{{ titulo }}</h3>
+			 </div>
+			 <div class="modal-body">
+                <form class="form-horizontal" role="form">
+                  <div class="form-group">
+                    <label for="ejemplo_email_3" class="col-lg-4 control-label">Actual</label>
+                    <div class="col-lg-8">
+                      <input type="password" class="form-control" id="oldpass" name="oldpass" placeholder="Anterior contraseña">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="ejemplo_password_3" class="col-lg-4 control-label">Nueva Contraseña</label>
+                    <div class="col-lg-8">
+                      <input type="password" class="form-control" id="newpass" name="newpass" 
+                             placeholder="Nueva Contraseña">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="ejemplo_password_3" class="col-lg-4 control-label">Repita Nueva Contraseña</label>
+                    <div class="col-lg-8">
+                      <input type="password" class="form-control" id="newpass2" name="newpass2" 
+                             placeholder="Repita Nueva Contraseña">
+                    </div>
+                  </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+			 	<a href="" class="btn btn-default" data-dismiss="modal">Volver</a>
+			 	<a href="#" class="btn btn-primary" id="btn_login">Cambiar</a>
+			</div>
+        </div>
+    </div>
+</div>

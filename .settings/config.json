@@ -1,0 +1,52 @@
+{
+    "src": null,
+    "main": "index.html",
+    "buildOnSave": true,
+    "projectType": "standard",
+    "compiler": {
+        "noLib": false,
+        "removeComments": false,
+        "noImplicitAny": false,
+        "noEmitHelpers": false,
+        "declaration": false,
+        "sourceMap": true,
+        "propagateEnumConstants": false,
+        "allowAutomaticSemicolonInsertion": true,
+        "target": 1,
+        "module": 2,
+        "newLine": 0,
+        "outDir": "",
+        "rootDir": "app/ts/",
+        "out": ""
+    },
+    "codeFormat": {
+        "NewLineCharacter": "\r\n",
+        "ConvertTabsToSpaces": false,
+        "IndentSize": 4,
+        "TabSize": 4
+    },
+    "customBuild": {
+        "name": null,
+        "command": null,
+        "directory": null,
+        "environment": null,
+        "ownConsole": false
+    },
+    "customRun": {
+        "name": null,
+        "command": null,
+        "directory": null,
+        "environment": null,
+        "ownConsole": false
+    },
+    "documentation": {
+        "includeDeclarations": false,
+        "outputDirectory": null,
+        "readme": null,
+        "theme": "default"
+    },
+    "tslint": {
+        "useLint": false,
+        "lintFile": null
+    }
+}
