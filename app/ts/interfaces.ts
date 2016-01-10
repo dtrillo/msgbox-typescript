@@ -39,3 +39,8 @@ interface IYesNoCancel {
 	funcion_click_no: any,
 	funcion_click_cancel: any
 }
+
+interface ILiteEvent<T> {
+    on(handler: { (data?: T): void });
+    off(handler: { (data?: T): void });
+}

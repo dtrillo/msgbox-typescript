@@ -1,6 +1,7 @@
 /// <reference path="../typings/jquery.d.ts" />
 /// <reference path="../typings/bootstrap.d.ts" />
 /// <reference path="interfaces.ts" />
+/// <reference path="LiteEvent.ts" />
 
 /// <amd-dependency path="hbs!templates/msgbox" />
 /// <amd-dependency path="hbs!templates/login" />
@@ -8,39 +9,19 @@
 /// <amd-dependency path="hbs!templates/yesno" />
 
 var __UPDATED__ = '2015.11.13';
-var __VERSION__ = "1.1.0";
+var __VERSION__ = "1.2.0";
 var __AUTHOR__ = 'David Trillo';
 var __WEBSITE__ = '';
 
 // http://jschr.github.io/bootstrap-modal/
 import $ = require("jquery");
+import LiteEvent = require("liteevent");
 
 var MsgBoxTemplate:Function = require('hbs!templates/msgbox');
 var LoginTemplate:Function = require('hbs!templates/login');
 var CambiaPassTemplate:Function = require('hbs!templates/cambiapass');
 var YesNoTemplate:Function = require('hbs!templates/yesno');
 
-//  http://stackoverflow.com/questions/12881212/does-typescript-support-events-on-classes
-interface ILiteEvent<T> {
-    on(handler: { (data?: T): void });
-    off(handler: { (data?: T): void });
-}
-
-class LiteEvent<T> implements ILiteEvent<T> {
-    private handlers: { (data?: T): void; }[] = [];
-
-    public on(handler: { (data?: T): void }) {
-        this.handlers.push(handler);
-    }
-
-    public off(handler: { (data?: T): void }) {
-        this.handlers = this.handlers.filter(h => h !== handler);
-    }
-
-    public trigger(data?: T) {
-        this.handlers.slice(0).forEach(h => h(data));
-    }
-}
 
 class MsgBox {
 	private _s = 'show';
@@ -50,6 +31,9 @@ class MsgBox {
 	private base: JQuery;
 	private template:string ;
 	private msgbox: JQuery;
+	
+	private _div_alert: JQuery; // div_alert
+	private _div_alert_close_btn: JQuery;
 	
 	private onAlert = new LiteEvent<boolean>();
 	private onLogin = new LiteEvent<string>();   
@@ -91,7 +75,7 @@ class MsgBox {
 	public show_alert(opc: IAlert) {
 		var div = "#msgbox";
 		var that = this;
-		opc = that._valida_opciones_msgbox(opc)
+		opc = that._valida_opciones_msgbox(opc);
 		var tmp = MsgBoxTemplate(opc);
 		that.msgbox.html(tmp);
 		var div_msg = that.msgbox.find(div);
@@ -128,8 +112,8 @@ class MsgBox {
 				console.log('Sin datos para Login')
 			}
 		});
-		
 	}
+	
 	private _valida_login(form): boolean {
 		var campos = ["user", "password"];
 		var tmp: string = '';
@@ -227,6 +211,22 @@ class MsgBox {
 			setTimeout(() => { that.onYesNoCancel.trigger('cancel');; }, delay);	
 		});
 		
+	}
+	
+	set_div_alert(div: string) {
+		this._div_alert = $(div);
+	}
+	div_alert(html: string, timer = 0) {
+		this._div_alert.show();
+		this._div_alert_close_btn = this._div_alert.find('button');
+		var _msg = this._div_alert.find('#mensaje');
+		_msg.html(html);
+		if (timer > 0) { setTimeout(() => { this._div_alert_close_btn.hide(); }, timer);
+		}
+	}
+	div_alert_stop() {
+		// this._div_alert.addClass('hide');
+		this._div_alert.hide();
 	}
 }	
 export = MsgBox ;

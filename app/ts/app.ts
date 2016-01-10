@@ -10,7 +10,7 @@ require([
     'jquery',
     'bootstrap',
     "jquery.countdown.min"
-], function (MenuApp, $) {
+], (MenuApp, $) => {
     'use strict';
     $(() => { var menu = new MenuApp(); });
 });
