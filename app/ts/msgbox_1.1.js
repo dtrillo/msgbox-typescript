@@ -1,20 +1,34 @@
 /// <reference path="../typings/jquery.d.ts" />
 /// <reference path="../typings/bootstrap.d.ts" />
 /// <reference path="interfaces.ts" />
-/// <reference path="LiteEvent.ts" />
-define(["require", "exports", "jquery", "liteevent", "hbs!templates/msgbox", "hbs!templates/login", "hbs!templates/cambiapass", "hbs!templates/yesno"], function (require, exports, $, LiteEvent) {
+define(["require", "exports", "jquery", "hbs!templates/msgbox", "hbs!templates/login", "hbs!templates/cambiapass", "hbs!templates/yesno"], function (require, exports, $) {
     /// <amd-dependency path="hbs!templates/msgbox" />
     /// <amd-dependency path="hbs!templates/login" />
     /// <amd-dependency path="hbs!templates/cambiapass" />
     /// <amd-dependency path="hbs!templates/yesno" />
-    var __UPDATED__ = '2015.01.13';
-    var __VERSION__ = "1.2.1";
+    var __UPDATED__ = '2015.11.13';
+    var __VERSION__ = "1.1.0";
     var __AUTHOR__ = 'David Trillo';
     var __WEBSITE__ = '';
     var MsgBoxTemplate = require('hbs!templates/msgbox');
     var LoginTemplate = require('hbs!templates/login');
     var CambiaPassTemplate = require('hbs!templates/cambiapass');
     var YesNoTemplate = require('hbs!templates/yesno');
+    var LiteEvent = (function () {
+        function LiteEvent() {
+            this.handlers = [];
+        }
+        LiteEvent.prototype.on = function (handler) {
+            this.handlers.push(handler);
+        };
+        LiteEvent.prototype.off = function (handler) {
+            this.handlers = this.handlers.filter(function (h) { return h !== handler; });
+        };
+        LiteEvent.prototype.trigger = function (data) {
+            this.handlers.slice(0).forEach(function (h) { return h(data); });
+        };
+        return LiteEvent;
+    })();
     var MsgBox = (function () {
         function MsgBox(div_base) {
             this._s = 'show';
@@ -207,38 +221,17 @@ define(["require", "exports", "jquery", "liteevent", "hbs!templates/msgbox", "hb
                 e.preventDefault();
                 div_msg.modal(that._h);
                 opc.funcion_click_no('Pulsado NO');
-                setTimeout(function () { that.onYesNoCancel.trigger('no'); }, delay);
+                setTimeout(function () { that.onYesNoCancel.trigger('no'); ; }, delay);
             });
             div_msg.find('#btn_cancel').on('click', function (e) {
                 e.preventDefault();
                 div_msg.modal(that._h);
                 opc.funcion_click_cancel('Pulsado CANCEL');
-                setTimeout(function () { that.onYesNoCancel.trigger('cancel'); }, delay);
+                setTimeout(function () { that.onYesNoCancel.trigger('cancel'); ; }, delay);
             });
-        };
-        // DIV alert - Version 1.2.1
-        MsgBox.prototype.set_div_alert = function (div) {
-            var _this = this;
-            this._div_alert = $(div);
-            this.div_alert_stop();
-            this._div_alert.on('click', function (e) { _this.div_alert_stop(); });
-        };
-        MsgBox.prototype.div_alert = function (html, timer) {
-            if (timer === void 0) { timer = 0; }
-            var that = this;
-            that._div_alert.show();
-            that._div_alert_close_btn = that._div_alert.find('button');
-            var _msg = that._div_alert.find('#mensaje');
-            _msg.html(html);
-            if (timer > 0) {
-                setTimeout(function () { that.div_alert_stop(); }, timer);
-            }
-        };
-        MsgBox.prototype.div_alert_stop = function () {
-            this._div_alert.hide();
         };
         return MsgBox;
     })();
     return MsgBox;
 });
-//# sourceMappingURL=msgbox.js.map
+//# sourceMappingURL=msgbox_1.1.js.map

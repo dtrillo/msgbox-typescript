@@ -3,7 +3,7 @@
 /// <reference path="interfaces.ts" />
 
 var __UPDATED__ = '2015.11.13';
-var __VERSION__ = "1.1.0";
+var __VERSION__ = "1.2.0";
 var __AUTHOR__ = 'David Trillo';
 var __WEBSITE__ = '';
 
@@ -23,7 +23,7 @@ class MenuApp {
     constructor() {
         this.div_base = $(opciones_app.base);
         this.msg = new MsgBox();
-       
+        this.msg.set_div_alert("#flash");
         this.refresca();
         console.log('Plantilla cargada con exito!');
     }
@@ -35,8 +35,16 @@ class MenuApp {
     
 	refresca() {
 		var that = this;
+		// Flash
+		that.div_base.find('#btn_flash').on('click', (e) => {
+        	e.preventDefault();
+        	that.msg.div_alert('Ejemplo Flash', 5000);
+        	console.log(this);
+        	console.log(that);
+		})
+		
 		// Simple Click
-        this.div_base.find('#simple').on('click', (e) => {
+		this.div_base.find('#simple').on('click', (e) => {
         	e.preventDefault();
         	var opc: IAlert = { 
         		titulo: 'Test',

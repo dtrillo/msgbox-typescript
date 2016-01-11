@@ -1,27 +1,46 @@
 /// <reference path="../typings/jquery.d.ts" />
 /// <reference path="../typings/bootstrap.d.ts" />
 /// <reference path="interfaces.ts" />
-/// <reference path="LiteEvent.ts" />
 
 /// <amd-dependency path="hbs!templates/msgbox" />
 /// <amd-dependency path="hbs!templates/login" />
 /// <amd-dependency path="hbs!templates/cambiapass" />
 /// <amd-dependency path="hbs!templates/yesno" />
 
-var __UPDATED__ = '2015.01.13';
-var __VERSION__ = "1.2.1";
+var __UPDATED__ = '2015.11.13';
+var __VERSION__ = "1.1.0";
 var __AUTHOR__ = 'David Trillo';
 var __WEBSITE__ = '';
 
 // http://jschr.github.io/bootstrap-modal/
 import $ = require("jquery");
-import LiteEvent = require("liteevent");
 
 var MsgBoxTemplate:Function = require('hbs!templates/msgbox');
 var LoginTemplate:Function = require('hbs!templates/login');
 var CambiaPassTemplate:Function = require('hbs!templates/cambiapass');
 var YesNoTemplate:Function = require('hbs!templates/yesno');
 
+//  http://stackoverflow.com/questions/12881212/does-typescript-support-events-on-classes
+interface ILiteEvent<T> {
+    on(handler: { (data?: T): void });
+    off(handler: { (data?: T): void });
+}
+
+class LiteEvent<T> implements ILiteEvent<T> {
+    private handlers: { (data?: T): void; }[] = [];
+
+    public on(handler: { (data?: T): void }) {
+        this.handlers.push(handler);
+    }
+
+    public off(handler: { (data?: T): void }) {
+        this.handlers = this.handlers.filter(h => h !== handler);
+    }
+
+    public trigger(data?: T) {
+        this.handlers.slice(0).forEach(h => h(data));
+    }
+}
 
 class MsgBox {
 	private _s = 'show';
@@ -31,9 +50,6 @@ class MsgBox {
 	private base: JQuery;
 	private template:string ;
 	private msgbox: JQuery;
-	
-	private _div_alert: JQuery; // div_alert
-	private _div_alert_close_btn: JQuery;
 	
 	private onAlert = new LiteEvent<boolean>();
 	private onLogin = new LiteEvent<string>();   
@@ -75,7 +91,7 @@ class MsgBox {
 	public show_alert(opc: IAlert) {
 		var div = "#msgbox";
 		var that = this;
-		opc = that._valida_opciones_msgbox(opc);
+		opc = that._valida_opciones_msgbox(opc)
 		var tmp = MsgBoxTemplate(opc);
 		that.msgbox.html(tmp);
 		var div_msg = that.msgbox.find(div);
@@ -112,8 +128,8 @@ class MsgBox {
 				console.log('Sin datos para Login')
 			}
 		});
+		
 	}
-	
 	private _valida_login(form): boolean {
 		var campos = ["user", "password"];
 		var tmp: string = '';
@@ -202,33 +218,15 @@ class MsgBox {
 			e.preventDefault();
 			div_msg.modal(that._h);
 			opc.funcion_click_no('Pulsado NO');
-			setTimeout(() => { that.onYesNoCancel.trigger('no'); }, delay);	
+			setTimeout(() => { that.onYesNoCancel.trigger('no');; }, delay);	
 		});
 		div_msg.find('#btn_cancel').on('click', (e) => { 
 			e.preventDefault();
 			div_msg.modal(that._h);
 			opc.funcion_click_cancel('Pulsado CANCEL');
-			setTimeout(() => { that.onYesNoCancel.trigger('cancel'); }, delay);	
+			setTimeout(() => { that.onYesNoCancel.trigger('cancel');; }, delay);	
 		});
 		
-	}
-	
-	// DIV alert - Version 1.2.1
-	set_div_alert(div: string) {
-		this._div_alert = $(div);
-		this.div_alert_stop();
-		this._div_alert.on('click', (e) => { this.div_alert_stop() })
-	}
-	div_alert(html: string, timer: number = 0) {
-		var that = this;
-		that._div_alert.show();
-		that._div_alert_close_btn = that._div_alert.find('button');
-		var _msg = that._div_alert.find('#mensaje');
-		_msg.html(html);
-		if (timer > 0) { setTimeout( () => { that.div_alert_stop(); }, timer);	}
-	}
-	div_alert_stop() {
-		this._div_alert.hide();
 	}
 }	
 export = MsgBox ;

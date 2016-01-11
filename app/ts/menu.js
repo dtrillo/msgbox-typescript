@@ -3,7 +3,7 @@
 /// <reference path="interfaces.ts" />
 define(["require", "exports", "jquery", "msgbox"], function (require, exports, $, MsgBox) {
     var __UPDATED__ = '2015.11.13';
-    var __VERSION__ = "1.1.0";
+    var __VERSION__ = "1.2.0";
     var __AUTHOR__ = 'David Trillo';
     var __WEBSITE__ = '';
     var opciones_app = {
@@ -14,6 +14,7 @@ define(["require", "exports", "jquery", "msgbox"], function (require, exports, $
             this.debug = false;
             this.div_base = $(opciones_app.base);
             this.msg = new MsgBox();
+            this.msg.set_div_alert("#flash");
             this.refresca();
             console.log('Plantilla cargada con exito!');
         }
@@ -22,7 +23,15 @@ define(["require", "exports", "jquery", "msgbox"], function (require, exports, $
             console.log('Test ' + msg);
         };
         MenuApp.prototype.refresca = function () {
+            var _this = this;
             var that = this;
+            // Flash
+            that.div_base.find('#btn_flash').on('click', function (e) {
+                e.preventDefault();
+                that.msg.div_alert('Ejemplo Flash', 5000);
+                console.log(_this);
+                console.log(that);
+            });
             // Simple Click
             this.div_base.find('#simple').on('click', function (e) {
                 e.preventDefault();
