@@ -14,6 +14,7 @@ require.config({
 		"jquery.countdown.min": '../js/jquery.countdown.min',
         //shortcut paths
         templates: '../templates',
+        msgbox_templates: '../msgbox_templates',
         // data: '../data',
 
         //require plugins

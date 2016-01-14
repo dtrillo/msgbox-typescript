@@ -3,13 +3,13 @@
 /// <reference path="interfaces.ts" />
 /// <reference path="LiteEvent.ts" />
 
-/// <amd-dependency path="hbs!templates/msgbox" />
-/// <amd-dependency path="hbs!templates/login" />
-/// <amd-dependency path="hbs!templates/cambiapass" />
-/// <amd-dependency path="hbs!templates/yesno" />
+/// <amd-dependency path="hbs!msgbox_templates/msgbox" />
+/// <amd-dependency path="hbs!msgbox_templates/login" />
+/// <amd-dependency path="hbs!msgbox_templates/cambiapass" />
+/// <amd-dependency path="hbs!msgbox_templates/yesno" />
 
 var __UPDATED__ = '2015.01.13';
-var __VERSION__ = "1.2.1";
+var __VERSION__ = "1.3.0";
 var __AUTHOR__ = 'David Trillo';
 var __WEBSITE__ = '';
 
@@ -17,10 +17,10 @@ var __WEBSITE__ = '';
 import $ = require("jquery");
 import LiteEvent = require("liteevent");
 
-var MsgBoxTemplate:Function = require('hbs!templates/msgbox');
-var LoginTemplate:Function = require('hbs!templates/login');
-var CambiaPassTemplate:Function = require('hbs!templates/cambiapass');
-var YesNoTemplate:Function = require('hbs!templates/yesno');
+var MsgBoxTemplate:Function = require('hbs!msgbox_templates/msgbox');
+var LoginTemplate:Function = require('hbs!msgbox_templates/login');
+var CambiaPassTemplate:Function = require('hbs!msgbox_templates/cambiapass');
+var YesNoTemplate:Function = require('hbs!msgbox_templates/yesno');
 
 
 class MsgBox {
