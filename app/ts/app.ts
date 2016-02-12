@@ -9,7 +9,8 @@ require([
     'Menu',
     'jquery',
     'bootstrap',
-    "jquery.countdown.min"
+    "jquery.countdown.min",
+    "jquery.serialize-object.min",
 ], (MenuApp, $) => {
     'use strict';
     $(() => { var menu = new MenuApp(); });

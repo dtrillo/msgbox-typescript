@@ -12,6 +12,8 @@ require.config({
         jquery: '../js/jquery',
         "bootstrap": '../js/bootstrap.min',
 		"jquery.countdown.min": '../js/jquery.countdown.min',
+		"jquery.serialize-object.min": "../js/jquery.serialize-object.min", 
+		
         //shortcut paths
         templates: '../templates',
         msgbox_templates: '../msgbox_templates',
@@ -34,6 +36,7 @@ require.config({
         "Handlebars": {
             exports: 'Handlebars'
         },
+        "jquery.serialize-object.min": ['jquery'],
         "jquery.countdown.min": ['jquery']
     }
 });

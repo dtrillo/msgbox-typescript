@@ -8,8 +8,8 @@
 /// <amd-dependency path="hbs!msgbox_templates/cambiapass" />
 /// <amd-dependency path="hbs!msgbox_templates/yesno" />
 
-var __UPDATED__ = '2015.01.13';
-var __VERSION__ = "1.3.0";
+var __UPDATED__ = '2016.02.10';
+var __VERSION__ = "1.5.0";
 var __AUTHOR__ = 'David Trillo';
 var __WEBSITE__ = '';
 
@@ -35,17 +35,20 @@ class MsgBox {
 	private _div_alert: JQuery; // div_alert
 	private _div_alert_close_btn: JQuery;
 	
+	extraclass: string = "";
+	extraclassdefault: string = '';
+	
 	private onAlert = new LiteEvent<boolean>();
-	private onLogin = new LiteEvent<string>();   
+	private onLogin = new LiteEvent<{}>();   
     private onLogout = new LiteEvent<void>();     
-	private onChangePass = new LiteEvent<string>();     
-	private onYesNoCancel = new LiteEvent<string>();
+	private onChangePass = new LiteEvent<{}>();     
+	private onYesNoCancel = new LiteEvent<EMsgBox>();
 	
 	public get AlertOK(): ILiteEvent<boolean> { return this.onAlert; } 
-    public get LoggedIn(): ILiteEvent<string> { return this.onLogin; } 
+    public get LoggedIn(): ILiteEvent<{}> { return this.onLogin; } 
     public get LoggedOut(): ILiteEvent<void> { return this.onLogout; }
-    public get PassChanged(): ILiteEvent<string> { return this.onChangePass; }
-    public get YesNoCancel(): ILiteEvent<string> { return this.onYesNoCancel; }
+    public get PassChanged(): ILiteEvent<{}> { return this.onChangePass; }
+    public get YesNoCancel(): ILiteEvent<EMsgBox> { return this.onYesNoCancel; }
     
 	// Funciones privadas
 	private _creadiv(nombre): JQuery {
@@ -67,7 +70,9 @@ class MsgBox {
 	constructor(div_base?: JQuery) {
 		if (div_base == undefined) {
 			this.base = $('<div id="msgbox_container" />').appendTo('body');
-		} else { this.base = $(div_base);}
+		} 
+		else 
+		{ this.base = $(div_base);}
 		this.msgbox = this._creadiv('div_msgbox');	// DIV q almacena los .hbs
 	}
 	
@@ -79,37 +84,49 @@ class MsgBox {
 		var tmp = MsgBoxTemplate(opc);
 		that.msgbox.html(tmp);
 		var div_msg = that.msgbox.find(div);
-		
 		div_msg.modal(that._s);
-		
 		if (opc.timer > 0) {
-			setTimeout(() => { div_msg.modal(that._h); }, opc.timer);
+			setTimeout(() => { div_msg.modal(that._h); div_msg.html(''); }, opc.timer);
 		}
 		div_msg.find('#btn_login').on('click', (e) => { 
 			e.preventDefault();
 			div_msg.modal(that._h);
+			div_msg.html('');
 			that.onAlert.trigger(true);	
+			that.onAlert = new LiteEvent<boolean>();
 		});
 	}
 	
 	// Login MsgBOX
-	show_login(opc): any {
-		var div = '#form_login';
+	show_login(opc: ILogin): void {
 		var that = this;
+		var div = '#form_login';
 		var tmp = LoginTemplate(opc);
-		this.msgbox.html(tmp);
+		that.msgbox.html(tmp);
 		var form = this.msgbox.find(div);
-		this._clear_login(form);
 		form.modal(that._s);
-		form.find('#btn_login').on('click', (e) => { 
-			e.preventDefault();
-			form.modal(that._h);
-			if (that._valida_login(form)) {
-				var cadena = form.find(that._f).serialize();
-				that.onLogin.trigger(cadena);	
+		var btn = form.find('#btn_login');
+		form.find('input').on('keypress', function(e) {
+			if(e && e.keyCode == 13) {
+				e.preventDefault();
+				if (that._valida_login(form)) {
+					btn.trigger('click');
+				}
 			}
-			else {
-				console.log('Sin datos para Login')
+		})
+		btn.on('click', function(e) { // Version 1.5
+			e.preventDefault(); 
+			form.modal(that._h);  
+			console.log('Show Login Click');
+			if (that._valida_login(form)) {
+				var cadena = form.find(that._f).serializeObject(); //  .serialize();
+				setTimeout( () => { 
+        			that.onLogin.trigger(cadena);
+					that.onLogin = new LiteEvent<{}>();
+        		}, 200);
+				
+			}
+			else { /* console.log('Sin datos para Login') */
 			}
 		});
 	}
@@ -141,16 +158,22 @@ class MsgBox {
 		this.msgbox.html(tmp);
 		var form = this.msgbox.find('#form_cambiapass');
 		form.modal(that._s);
-		form.find('#btn_login').on('click', (e) => { 
+		var btn = form.find('#btn_login');
+		form.find('input').on('keypress', function(e) {
+			if(e && e.keyCode == 13) {
+			e.preventDefault();
+				if (that._valida_login(form)) {	btn.trigger('click'); }
+			}
+		})
+		btn.on('click', (e) => { 
 			e.preventDefault();
 			var subform = form.find(that._f);
-			var cadena = subform.serialize();
+			var cadena = subform.serializeObject();
 			form.modal(that._h);
 			var que: number = that._valida_cambiapass(subform); // Que devuelve 0 si no hace nada, 1 si es OK y 2 si hay error!
-			if (que == 1) {
-				// Si todo es correcto!
+			if (que == 1) { // Si todo es correcto!
 				that.onChangePass.trigger(cadena);
-			}
+				that.onChangePass = new LiteEvent<{}>(); }
 			else if (que == 2){
 				var aler: IAlert = that._valida_opciones_msgbox(opc.alert_change_password_error);
 				setTimeout(() => { that.show_alert(aler); }, delay);
@@ -195,40 +218,55 @@ class MsgBox {
 		div_msg.find('#btn_yes').on('click', (e) => { 
 			e.preventDefault();
 			div_msg.modal(that._h);
-			opc.funcion_click_yes('Pulsado SI');
-			setTimeout(() => { that.onYesNoCancel.trigger('yes');; }, delay);
+			that.onYesNoCancel.trigger(0);
 		});
 		div_msg.find('#btn_no').on('click', (e) => { 
 			e.preventDefault();
 			div_msg.modal(that._h);
-			opc.funcion_click_no('Pulsado NO');
-			setTimeout(() => { that.onYesNoCancel.trigger('no'); }, delay);	
+			that.onYesNoCancel.trigger(1);
+			
 		});
 		div_msg.find('#btn_cancel').on('click', (e) => { 
 			e.preventDefault();
 			div_msg.modal(that._h);
-			opc.funcion_click_cancel('Pulsado CANCEL');
-			setTimeout(() => { that.onYesNoCancel.trigger('cancel'); }, delay);	
+			that.onYesNoCancel.trigger(2);
 		});
 		
 	}
 	
 	// DIV alert - Version 1.2.1
-	set_div_alert(div: string) {
+	set_div_alert(div: string, defaultclass: string = "alert-warning") { // 1.4.5
 		this._div_alert = $(div);
 		this.div_alert_stop();
+		this._div_alert.removeClass('hide'); // 1.4.5
+		this.extraclassdefault = defaultclass;
+		this._div_alert.find('.alert').addClass(this.extraclassdefault);
 		this._div_alert.on('click', (e) => { this.div_alert_stop() })
 	}
-	div_alert(html: string, timer: number = 0) {
+	// div_alert(html: string, timer: number = 0, clase: string="") { // DEPRECATED 1.4.6
+	div_alert(opc: IDivAlert) {
 		var that = this;
+		if (opc["clase"] == undefined) { opc.clase = "";}
+		if (opc["tiempo"] == undefined) { opc.tiempo = 0}
+		if (opc.clase.length > 0) { // 1.4.6
+			that.extraclass = opc.clase;
+			that._div_alert.find('.alert').removeClass(that.extraclassdefault).addClass(that.extraclass);
+		}
 		that._div_alert.show();
 		that._div_alert_close_btn = that._div_alert.find('button');
 		var _msg = that._div_alert.find('#mensaje');
-		_msg.html(html);
-		if (timer > 0) { setTimeout( () => { that.div_alert_stop(); }, timer);	}
+		_msg.html(opc.mensaje);
+		if (opc.tiempo > 0) { setTimeout( () => { that.div_alert_stop(); }, opc.tiempo);	}
+		that._div_alert_close_btn.on('click', (e) => { that.div_alert_stop();}) // 1.4.6
 	}
 	div_alert_stop() {
-		this._div_alert.hide();
+		var that = this;
+		this._div_alert.hide(); // 1.4.6
+		if (this.extraclass.length > 0) {
+			that._div_alert.find('.alert').removeClass(that.extraclass).addClass(that.extraclassdefault)
+			this.extraclass = "";
+		}
+		
 	}
 }	
 export = MsgBox ;

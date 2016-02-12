@@ -1,9 +1,10 @@
 /// <reference path="../typings/jquery.d.ts" />
 /// <reference path="../typings/bootstrap.d.ts" />
 /// <reference path="interfaces.ts" />
+/// <reference path="msgbox_interfaces.ts" />
 
-var __UPDATED__ = '2015.11.13';
-var __VERSION__ = "1.2.0";
+var __UPDATED__ = '2016.02.02';
+var __VERSION__ = "1.4.0";
 var __AUTHOR__ = 'David Trillo';
 var __WEBSITE__ = '';
 
@@ -38,13 +39,17 @@ class MenuApp {
 		// Flash
 		that.div_base.find('#btn_flash').on('click', (e) => {
         	e.preventDefault();
-        	that.msg.div_alert('Ejemplo Flash', 5000);
+        	var data: IDivAlert = {
+        		mensaje: 'Ejemplo Flash',
+        		tiempo: 5000
+        	}
+        	that.msg.div_alert(data);
         	console.log(this);
         	console.log(that);
 		})
 		
 		// Simple Click
-		this.div_base.find('#simple').on('click', (e) => {
+		that.div_base.find('#simple').on('click', (e) => {
         	e.preventDefault();
         	var opc: IAlert = { 
         		titulo: 'Test',
@@ -59,7 +64,7 @@ class MenuApp {
         	that.msg.AlertOK.on((bln) => { that.test('Simple'); });
         });
         
-        this.div_base.find('#timer5sec').on('click', (e) => {
+        that.div_base.find('#timer5sec').on('click', (e) => {
         	e.preventDefault();
         	var opc: IAlert = { // IAlert
         		titulo: 'Test',
@@ -72,7 +77,7 @@ class MenuApp {
         	that.msg.AlertOK.on((bln) => { that.test(' 5 seconds Simple'); });
         });
         
-        this.div_base.find('#yesno').on('click', (e) => {
+        that.div_base.find('#yesno').on('click', (e) => {
         	e.preventDefault();
         	var opc: IYesNoCancel = { 
         		titulo: 'Test para MsgBox Si-No-Cancel',
@@ -84,32 +89,61 @@ class MenuApp {
         		boton_cerrar: true,
         		cancel_btn_class: 'btn-danger',
         		yes_btn_class: 'btn-primary',
-        		no_btn_class: 'btn-primary',
-        		funcion_click_yes: that.test,
-        		funcion_click_no: that.test,
-        		funcion_click_cancel: that.test
+        		no_btn_class: 'btn-primary'
         	}
         	that.msg.show_yesno(opc);
-        	that.msg.YesNoCancel.on((cadena) => {
-        		console.log('Pulsado ...: ' + cadena);
+        	that.msg.YesNoCancel.on((btn: EMsgBox) => { // 1.4.3
+        		var valor: string;
+        		switch(btn) {
+				    case 1: // NO
+				    	valor = "NO";
+				        break;
+				    case 2: // Cancel
+				        valor = "CANCEL";
+				        break;
+				    default: // Yes
+		        		valor = "SI";
+				} 
+				console.log('Pulsado ...: ' + valor);
         	})
         });
         
         // Ejemplo Login
-        this.div_base.find('#login').on('click', (e) => {
+        that.div_base.find('#login').on('click', (e) => {
         	e.preventDefault();
-        	var opc = { 
-        		titulo: 'Test',
-        		mensaje: 'Esto es una prueba de solo 5 segundos'
+        	var login_data: ILogin = {
+    			modal_header_class: 'modal-header-success',
+        		titulo: 'Acceso a TEST',
+        		usuario: '',
+        		btn_entrar_class: 'btn-primary',
+        		btn_cerrar_class: 'btn-default'
         	}
-        	that.msg.LoggedIn.on((cadena) => {
-        		console.log('cadena: ' + cadena);	
+        	that.msg.LoggedIn.on(
+        		(data) => {
+        		// console.log(data);
+        		var opc: IAlert = { 
+	        		titulo: 'Test',
+	        		mensaje: 'Usuario: ' + data["user"],
+	        		txt_boton_cerrar: 'Cerrar',
+	        		btn_class: 'btn-default',
+	        		modal_header_class: 'modal-header-success',
+	        		boton_cerrar: true,
+	        		funcion_click_cerrar: that.test
+        		}
+        		that.msg.show_alert(opc); 
+        		//
+        		/* var alerta: IDivAlert = {
+	        		mensaje: 'Ejemplo Flash',
+	        		tiempo: 5000,
+	        		clase: 'alert-danger'
+	        	}
+        		that.msg.div_alert(alerta); */
         	});
-        	that.msg.show_login(opc);
+        	that.msg.show_login(login_data);
         });
         
         // Ejemplo Cambia Pass
-        this.div_base.find('#cambiapass').on('click', (e) => {
+        that.div_base.find('#cambiapass').on('click', (e) => {
         	e.preventDefault();
         	var no_pass: IAlert = {
         		titulo: 'Error en modificación de contraseña',
@@ -123,7 +157,9 @@ class MenuApp {
         		mensaje: 'Cambiar Password',
         		btn_class: 'btn-danger',
         		boton_cerrar: true,
-        		alert_change_password_error: no_pass
+        		alert_change_password_error: no_pass,
+        		btn_volver_class: 'btn-default',
+        		btn_cambiar_class: 'btn-success'
         	}
         	that.msg.show_cambiapass(opc);
         	that.msg.PassChanged.on((cadena) => {

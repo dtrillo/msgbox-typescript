@@ -7,8 +7,8 @@ define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbo
     /// <amd-dependency path="hbs!msgbox_templates/login" />
     /// <amd-dependency path="hbs!msgbox_templates/cambiapass" />
     /// <amd-dependency path="hbs!msgbox_templates/yesno" />
-    var __UPDATED__ = '2015.01.13';
-    var __VERSION__ = "1.3.0";
+    var __UPDATED__ = '2016.02.10';
+    var __VERSION__ = "1.5.0";
     var __AUTHOR__ = 'David Trillo';
     var __WEBSITE__ = '';
     var MsgBoxTemplate = require('hbs!msgbox_templates/msgbox');
@@ -20,6 +20,8 @@ define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbo
             this._s = 'show';
             this._h = 'hide';
             this._f = 'form';
+            this.extraclass = "";
+            this.extraclassdefault = '';
             this.onAlert = new LiteEvent();
             this.onLogin = new LiteEvent();
             this.onLogout = new LiteEvent();
@@ -90,32 +92,45 @@ define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbo
             var div_msg = that.msgbox.find(div);
             div_msg.modal(that._s);
             if (opc.timer > 0) {
-                setTimeout(function () { div_msg.modal(that._h); }, opc.timer);
+                setTimeout(function () { div_msg.modal(that._h); div_msg.html(''); }, opc.timer);
             }
             div_msg.find('#btn_login').on('click', function (e) {
                 e.preventDefault();
                 div_msg.modal(that._h);
+                div_msg.html('');
                 that.onAlert.trigger(true);
+                that.onAlert = new LiteEvent();
             });
         };
         // Login MsgBOX
         MsgBox.prototype.show_login = function (opc) {
-            var div = '#form_login';
             var that = this;
+            var div = '#form_login';
             var tmp = LoginTemplate(opc);
-            this.msgbox.html(tmp);
+            that.msgbox.html(tmp);
             var form = this.msgbox.find(div);
-            this._clear_login(form);
             form.modal(that._s);
-            form.find('#btn_login').on('click', function (e) {
+            var btn = form.find('#btn_login');
+            form.find('input').on('keypress', function (e) {
+                if (e && e.keyCode == 13) {
+                    e.preventDefault();
+                    if (that._valida_login(form)) {
+                        btn.trigger('click');
+                    }
+                }
+            });
+            btn.on('click', function (e) {
                 e.preventDefault();
                 form.modal(that._h);
+                console.log('Show Login Click');
                 if (that._valida_login(form)) {
-                    var cadena = form.find(that._f).serialize();
-                    that.onLogin.trigger(cadena);
+                    var cadena = form.find(that._f).serializeObject(); //  .serialize();
+                    setTimeout(function () {
+                        that.onLogin.trigger(cadena);
+                        that.onLogin = new LiteEvent();
+                    }, 200);
                 }
                 else {
-                    console.log('Sin datos para Login');
                 }
             });
         };
@@ -149,15 +164,24 @@ define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbo
             this.msgbox.html(tmp);
             var form = this.msgbox.find('#form_cambiapass');
             form.modal(that._s);
-            form.find('#btn_login').on('click', function (e) {
+            var btn = form.find('#btn_login');
+            form.find('input').on('keypress', function (e) {
+                if (e && e.keyCode == 13) {
+                    e.preventDefault();
+                    if (that._valida_login(form)) {
+                        btn.trigger('click');
+                    }
+                }
+            });
+            btn.on('click', function (e) {
                 e.preventDefault();
                 var subform = form.find(that._f);
-                var cadena = subform.serialize();
+                var cadena = subform.serializeObject();
                 form.modal(that._h);
                 var que = that._valida_cambiapass(subform); // Que devuelve 0 si no hace nada, 1 si es OK y 2 si hay error!
                 if (que == 1) {
-                    // Si todo es correcto!
                     that.onChangePass.trigger(cadena);
+                    that.onChangePass = new LiteEvent();
                 }
                 else if (que == 2) {
                     var aler = that._valida_opciones_msgbox(opc.alert_change_password_error);
@@ -200,42 +224,59 @@ define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbo
             div_msg.find('#btn_yes').on('click', function (e) {
                 e.preventDefault();
                 div_msg.modal(that._h);
-                opc.funcion_click_yes('Pulsado SI');
-                setTimeout(function () { that.onYesNoCancel.trigger('yes'); ; }, delay);
+                that.onYesNoCancel.trigger(0);
             });
             div_msg.find('#btn_no').on('click', function (e) {
                 e.preventDefault();
                 div_msg.modal(that._h);
-                opc.funcion_click_no('Pulsado NO');
-                setTimeout(function () { that.onYesNoCancel.trigger('no'); }, delay);
+                that.onYesNoCancel.trigger(1);
             });
             div_msg.find('#btn_cancel').on('click', function (e) {
                 e.preventDefault();
                 div_msg.modal(that._h);
-                opc.funcion_click_cancel('Pulsado CANCEL');
-                setTimeout(function () { that.onYesNoCancel.trigger('cancel'); }, delay);
+                that.onYesNoCancel.trigger(2);
             });
         };
         // DIV alert - Version 1.2.1
-        MsgBox.prototype.set_div_alert = function (div) {
+        MsgBox.prototype.set_div_alert = function (div, defaultclass) {
             var _this = this;
+            if (defaultclass === void 0) { defaultclass = "alert-warning"; }
             this._div_alert = $(div);
             this.div_alert_stop();
+            this._div_alert.removeClass('hide'); // 1.4.5
+            this.extraclassdefault = defaultclass;
+            this._div_alert.find('.alert').addClass(this.extraclassdefault);
             this._div_alert.on('click', function (e) { _this.div_alert_stop(); });
         };
-        MsgBox.prototype.div_alert = function (html, timer) {
-            if (timer === void 0) { timer = 0; }
+        // div_alert(html: string, timer: number = 0, clase: string="") { // DEPRECATED 1.4.6
+        MsgBox.prototype.div_alert = function (opc) {
             var that = this;
+            if (opc["clase"] == undefined) {
+                opc.clase = "";
+            }
+            if (opc["tiempo"] == undefined) {
+                opc.tiempo = 0;
+            }
+            if (opc.clase.length > 0) {
+                that.extraclass = opc.clase;
+                that._div_alert.find('.alert').removeClass(that.extraclassdefault).addClass(that.extraclass);
+            }
             that._div_alert.show();
             that._div_alert_close_btn = that._div_alert.find('button');
             var _msg = that._div_alert.find('#mensaje');
-            _msg.html(html);
-            if (timer > 0) {
-                setTimeout(function () { that.div_alert_stop(); }, timer);
+            _msg.html(opc.mensaje);
+            if (opc.tiempo > 0) {
+                setTimeout(function () { that.div_alert_stop(); }, opc.tiempo);
             }
+            that._div_alert_close_btn.on('click', function (e) { that.div_alert_stop(); }); // 1.4.6
         };
         MsgBox.prototype.div_alert_stop = function () {
-            this._div_alert.hide();
+            var that = this;
+            this._div_alert.hide(); // 1.4.6
+            if (this.extraclass.length > 0) {
+                that._div_alert.find('.alert').removeClass(that.extraclass).addClass(that.extraclassdefault);
+                this.extraclass = "";
+            }
         };
         return MsgBox;
     })();

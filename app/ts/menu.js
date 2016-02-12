@@ -1,9 +1,10 @@
 /// <reference path="../typings/jquery.d.ts" />
 /// <reference path="../typings/bootstrap.d.ts" />
 /// <reference path="interfaces.ts" />
+/// <reference path="msgbox_interfaces.ts" />
 define(["require", "exports", "jquery", "msgbox"], function (require, exports, $, MsgBox) {
-    var __UPDATED__ = '2015.11.13';
-    var __VERSION__ = "1.2.0";
+    var __UPDATED__ = '2016.02.02';
+    var __VERSION__ = "1.4.0";
     var __AUTHOR__ = 'David Trillo';
     var __WEBSITE__ = '';
     var opciones_app = {
@@ -28,12 +29,16 @@ define(["require", "exports", "jquery", "msgbox"], function (require, exports, $
             // Flash
             that.div_base.find('#btn_flash').on('click', function (e) {
                 e.preventDefault();
-                that.msg.div_alert('Ejemplo Flash', 5000);
+                var data = {
+                    mensaje: 'Ejemplo Flash',
+                    tiempo: 5000
+                };
+                that.msg.div_alert(data);
                 console.log(_this);
                 console.log(that);
             });
             // Simple Click
-            this.div_base.find('#simple').on('click', function (e) {
+            that.div_base.find('#simple').on('click', function (e) {
                 e.preventDefault();
                 var opc = {
                     titulo: 'Test',
@@ -47,7 +52,7 @@ define(["require", "exports", "jquery", "msgbox"], function (require, exports, $
                 that.msg.show_alert(opc);
                 that.msg.AlertOK.on(function (bln) { that.test('Simple'); });
             });
-            this.div_base.find('#timer5sec').on('click', function (e) {
+            that.div_base.find('#timer5sec').on('click', function (e) {
                 e.preventDefault();
                 var opc = {
                     titulo: 'Test',
@@ -59,7 +64,7 @@ define(["require", "exports", "jquery", "msgbox"], function (require, exports, $
                 that.msg.show_alert(opc);
                 that.msg.AlertOK.on(function (bln) { that.test(' 5 seconds Simple'); });
             });
-            this.div_base.find('#yesno').on('click', function (e) {
+            that.div_base.find('#yesno').on('click', function (e) {
                 e.preventDefault();
                 var opc = {
                     titulo: 'Test para MsgBox Si-No-Cancel',
@@ -71,30 +76,58 @@ define(["require", "exports", "jquery", "msgbox"], function (require, exports, $
                     boton_cerrar: true,
                     cancel_btn_class: 'btn-danger',
                     yes_btn_class: 'btn-primary',
-                    no_btn_class: 'btn-primary',
-                    funcion_click_yes: that.test,
-                    funcion_click_no: that.test,
-                    funcion_click_cancel: that.test
+                    no_btn_class: 'btn-primary'
                 };
                 that.msg.show_yesno(opc);
-                that.msg.YesNoCancel.on(function (cadena) {
-                    console.log('Pulsado ...: ' + cadena);
+                that.msg.YesNoCancel.on(function (btn) {
+                    var valor;
+                    switch (btn) {
+                        case 1:
+                            valor = "NO";
+                            break;
+                        case 2:
+                            valor = "CANCEL";
+                            break;
+                        default:
+                            valor = "SI";
+                    }
+                    console.log('Pulsado ...: ' + valor);
                 });
             });
             // Ejemplo Login
-            this.div_base.find('#login').on('click', function (e) {
+            that.div_base.find('#login').on('click', function (e) {
                 e.preventDefault();
-                var opc = {
-                    titulo: 'Test',
-                    mensaje: 'Esto es una prueba de solo 5 segundos'
+                var login_data = {
+                    modal_header_class: 'modal-header-success',
+                    titulo: 'Acceso a TEST',
+                    usuario: '',
+                    btn_entrar_class: 'btn-primary',
+                    btn_cerrar_class: 'btn-default'
                 };
-                that.msg.LoggedIn.on(function (cadena) {
-                    console.log('cadena: ' + cadena);
+                that.msg.LoggedIn.on(function (data) {
+                    // console.log(data);
+                    var opc = {
+                        titulo: 'Test',
+                        mensaje: 'Usuario: ' + data["user"],
+                        txt_boton_cerrar: 'Cerrar',
+                        btn_class: 'btn-default',
+                        modal_header_class: 'modal-header-success',
+                        boton_cerrar: true,
+                        funcion_click_cerrar: that.test
+                    };
+                    that.msg.show_alert(opc);
+                    //
+                    /* var alerta: IDivAlert = {
+                        mensaje: 'Ejemplo Flash',
+                        tiempo: 5000,
+                        clase: 'alert-danger'
+                    }
+                    that.msg.div_alert(alerta); */
                 });
-                that.msg.show_login(opc);
+                that.msg.show_login(login_data);
             });
             // Ejemplo Cambia Pass
-            this.div_base.find('#cambiapass').on('click', function (e) {
+            that.div_base.find('#cambiapass').on('click', function (e) {
                 e.preventDefault();
                 var no_pass = {
                     titulo: 'Error en modificación de contraseña',
@@ -108,7 +141,9 @@ define(["require", "exports", "jquery", "msgbox"], function (require, exports, $
                     mensaje: 'Cambiar Password',
                     btn_class: 'btn-danger',
                     boton_cerrar: true,
-                    alert_change_password_error: no_pass
+                    alert_change_password_error: no_pass,
+                    btn_volver_class: 'btn-default',
+                    btn_cambiar_class: 'btn-success'
                 };
                 that.msg.show_cambiapass(opc);
                 that.msg.PassChanged.on(function (cadena) {
