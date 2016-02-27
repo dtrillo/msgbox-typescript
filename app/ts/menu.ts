@@ -1,7 +1,7 @@
 /// <reference path="../typings/jquery.d.ts" />
 /// <reference path="../typings/bootstrap.d.ts" />
 /// <reference path="interfaces.ts" />
-/// <reference path="msgbox_interfaces.ts" />
+/// <reference path="flash_msg.ts" />
 
 var __UPDATED__ = '2016.02.02';
 var __VERSION__ = "1.4.0";
@@ -10,6 +10,7 @@ var __WEBSITE__ = '';
 
 import $ = require("jquery");
 import MsgBox = require("msgbox");
+import Flash = require("flash_msg");
 
 var opciones_app = {
     base: '#contenedor'
@@ -20,11 +21,12 @@ class MenuApp {
     private debug: boolean = false;
     private msg: MsgBox;
     private div_base: JQuery;
-    
+    private alert: Flash;
     constructor() {
         this.div_base = $(opciones_app.base);
         this.msg = new MsgBox();
-        this.msg.set_div_alert("#flash");
+        // this.msg.set_div_alert("#flash"); // 1.6.0
+        this.alert = new Flash('#flash');
         this.refresca();
         console.log('Plantilla cargada con exito!');
     }
@@ -43,9 +45,10 @@ class MenuApp {
         		mensaje: 'Ejemplo Flash',
         		tiempo: 5000
         	}
-        	that.msg.div_alert(data);
-        	console.log(this);
-        	console.log(that);
+        	// that.msg.div_alert(data); 1.6.0
+        	that.alert.div_alert(data);
+        	// console.log(this);
+        	// console.log(that);
 		})
 		
 		// Simple Click
@@ -132,12 +135,13 @@ class MenuApp {
         		}
         		that.msg.show_alert(opc); 
         		//
-        		/* var alerta: IDivAlert = {
+        		var alerta: IDivAlert = {
 	        		mensaje: 'Ejemplo Flash',
 	        		tiempo: 5000,
 	        		clase: 'alert-danger'
 	        	}
-        		that.msg.div_alert(alerta); */
+        		/* that.msg.div_alert(alerta); */
+        		that.alert.div_alert(alerta)
         	});
         	that.msg.show_login(login_data);
         });

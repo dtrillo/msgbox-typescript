@@ -1,29 +1,39 @@
 /// <reference path="../typings/jquery.d.ts" />
 /// <reference path="../typings/bootstrap.d.ts" />
 /// <reference path="interfaces.ts" />
-/// <reference path="LiteEvent.ts" />
-define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbox", "hbs!msgbox_templates/login", "hbs!msgbox_templates/cambiapass", "hbs!msgbox_templates/yesno"], function (require, exports, $, LiteEvent) {
-    /// <amd-dependency path="hbs!msgbox_templates/msgbox" />
-    /// <amd-dependency path="hbs!msgbox_templates/login" />
-    /// <amd-dependency path="hbs!msgbox_templates/cambiapass" />
-    /// <amd-dependency path="hbs!msgbox_templates/yesno" />
-    var __UPDATED__ = '2016.02.10';
-    var __VERSION__ = "1.6.0";
+define(["require", "exports", "jquery", "hbs!templates/msgbox", "hbs!templates/login", "hbs!templates/cambiapass", "hbs!templates/yesno"], function (require, exports, $) {
+    /// <amd-dependency path="hbs!templates/msgbox" />
+    /// <amd-dependency path="hbs!templates/login" />
+    /// <amd-dependency path="hbs!templates/cambiapass" />
+    /// <amd-dependency path="hbs!templates/yesno" />
+    var __UPDATED__ = '2015.11.13';
+    var __VERSION__ = "1.1.0";
     var __AUTHOR__ = 'David Trillo';
     var __WEBSITE__ = '';
-    var MsgBoxTemplate = require('hbs!msgbox_templates/msgbox');
-    var LoginTemplate = require('hbs!msgbox_templates/login');
-    var CambiaPassTemplate = require('hbs!msgbox_templates/cambiapass');
-    var YesNoTemplate = require('hbs!msgbox_templates/yesno');
+    var MsgBoxTemplate = require('hbs!templates/msgbox');
+    var LoginTemplate = require('hbs!templates/login');
+    var CambiaPassTemplate = require('hbs!templates/cambiapass');
+    var YesNoTemplate = require('hbs!templates/yesno');
+    var LiteEvent = (function () {
+        function LiteEvent() {
+            this.handlers = [];
+        }
+        LiteEvent.prototype.on = function (handler) {
+            this.handlers.push(handler);
+        };
+        LiteEvent.prototype.off = function (handler) {
+            this.handlers = this.handlers.filter(function (h) { return h !== handler; });
+        };
+        LiteEvent.prototype.trigger = function (data) {
+            this.handlers.slice(0).forEach(function (h) { return h(data); });
+        };
+        return LiteEvent;
+    })();
     var MsgBox = (function () {
         function MsgBox(div_base) {
             this._s = 'show';
             this._h = 'hide';
             this._f = 'form';
-            // private _div_alert: JQuery; // div_alert 1.6.0
-            // private _div_alert_close_btn: JQuery;
-            // extraclass: string = "";
-            // extraclassdefault: string = '';
             this.onAlert = new LiteEvent();
             this.onLogin = new LiteEvent();
             this.onLogout = new LiteEvent();
@@ -94,45 +104,32 @@ define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbo
             var div_msg = that.msgbox.find(div);
             div_msg.modal(that._s);
             if (opc.timer > 0) {
-                setTimeout(function () { div_msg.modal(that._h); div_msg.html(''); }, opc.timer);
+                setTimeout(function () { div_msg.modal(that._h); }, opc.timer);
             }
             div_msg.find('#btn_login').on('click', function (e) {
                 e.preventDefault();
                 div_msg.modal(that._h);
-                div_msg.html('');
                 that.onAlert.trigger(true);
-                that.onAlert = new LiteEvent();
             });
         };
         // Login MsgBOX
         MsgBox.prototype.show_login = function (opc) {
-            var that = this;
             var div = '#form_login';
+            var that = this;
             var tmp = LoginTemplate(opc);
-            that.msgbox.html(tmp);
+            this.msgbox.html(tmp);
             var form = this.msgbox.find(div);
+            this._clear_login(form);
             form.modal(that._s);
-            var btn = form.find('#btn_login');
-            form.find('input').on('keypress', function (e) {
-                if (e && e.keyCode == 13) {
-                    e.preventDefault();
-                    if (that._valida_login(form)) {
-                        btn.trigger('click');
-                    }
-                }
-            });
-            btn.on('click', function (e) {
+            form.find('#btn_login').on('click', function (e) {
                 e.preventDefault();
                 form.modal(that._h);
-                console.log('Show Login Click');
                 if (that._valida_login(form)) {
-                    var cadena = form.find(that._f).serializeObject(); //  .serialize();
-                    setTimeout(function () {
-                        that.onLogin.trigger(cadena);
-                        that.onLogin = new LiteEvent();
-                    }, 200);
+                    var cadena = form.find(that._f).serialize();
+                    that.onLogin.trigger(cadena);
                 }
                 else {
+                    console.log('Sin datos para Login');
                 }
             });
         };
@@ -166,24 +163,15 @@ define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbo
             this.msgbox.html(tmp);
             var form = this.msgbox.find('#form_cambiapass');
             form.modal(that._s);
-            var btn = form.find('#btn_login');
-            form.find('input').on('keypress', function (e) {
-                if (e && e.keyCode == 13) {
-                    e.preventDefault();
-                    if (that._valida_login(form)) {
-                        btn.trigger('click');
-                    }
-                }
-            });
-            btn.on('click', function (e) {
+            form.find('#btn_login').on('click', function (e) {
                 e.preventDefault();
                 var subform = form.find(that._f);
-                var cadena = subform.serializeObject();
+                var cadena = subform.serialize();
                 form.modal(that._h);
                 var que = that._valida_cambiapass(subform); // Que devuelve 0 si no hace nada, 1 si es OK y 2 si hay error!
                 if (que == 1) {
+                    // Si todo es correcto!
                     that.onChangePass.trigger(cadena);
-                    that.onChangePass = new LiteEvent();
                 }
                 else if (que == 2) {
                     var aler = that._valida_opciones_msgbox(opc.alert_change_password_error);
@@ -226,21 +214,24 @@ define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbo
             div_msg.find('#btn_yes').on('click', function (e) {
                 e.preventDefault();
                 div_msg.modal(that._h);
-                that.onYesNoCancel.trigger(0);
+                opc.funcion_click_yes('Pulsado SI');
+                setTimeout(function () { that.onYesNoCancel.trigger('yes'); ; }, delay);
             });
             div_msg.find('#btn_no').on('click', function (e) {
                 e.preventDefault();
                 div_msg.modal(that._h);
-                that.onYesNoCancel.trigger(1);
+                opc.funcion_click_no('Pulsado NO');
+                setTimeout(function () { that.onYesNoCancel.trigger('no'); ; }, delay);
             });
             div_msg.find('#btn_cancel').on('click', function (e) {
                 e.preventDefault();
                 div_msg.modal(that._h);
-                that.onYesNoCancel.trigger(2);
+                opc.funcion_click_cancel('Pulsado CANCEL');
+                setTimeout(function () { that.onYesNoCancel.trigger('cancel'); ; }, delay);
             });
         };
         return MsgBox;
     })();
     return MsgBox;
 });
-//# sourceMappingURL=msgbox.js.map
+//# sourceMappingURL=msgbox_1.1.js.map

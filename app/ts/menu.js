@@ -1,8 +1,8 @@
 /// <reference path="../typings/jquery.d.ts" />
 /// <reference path="../typings/bootstrap.d.ts" />
 /// <reference path="interfaces.ts" />
-/// <reference path="msgbox_interfaces.ts" />
-define(["require", "exports", "jquery", "msgbox"], function (require, exports, $, MsgBox) {
+/// <reference path="flash_msg.ts" />
+define(["require", "exports", "jquery", "msgbox", "flash_msg"], function (require, exports, $, MsgBox, Flash) {
     var __UPDATED__ = '2016.02.02';
     var __VERSION__ = "1.4.0";
     var __AUTHOR__ = 'David Trillo';
@@ -15,7 +15,8 @@ define(["require", "exports", "jquery", "msgbox"], function (require, exports, $
             this.debug = false;
             this.div_base = $(opciones_app.base);
             this.msg = new MsgBox();
-            this.msg.set_div_alert("#flash");
+            // this.msg.set_div_alert("#flash"); // 1.6.0
+            this.alert = new Flash('#flash');
             this.refresca();
             console.log('Plantilla cargada con exito!');
         }
@@ -24,7 +25,6 @@ define(["require", "exports", "jquery", "msgbox"], function (require, exports, $
             console.log('Test ' + msg);
         };
         MenuApp.prototype.refresca = function () {
-            var _this = this;
             var that = this;
             // Flash
             that.div_base.find('#btn_flash').on('click', function (e) {
@@ -33,9 +33,10 @@ define(["require", "exports", "jquery", "msgbox"], function (require, exports, $
                     mensaje: 'Ejemplo Flash',
                     tiempo: 5000
                 };
-                that.msg.div_alert(data);
-                console.log(_this);
-                console.log(that);
+                // that.msg.div_alert(data); 1.6.0
+                that.alert.div_alert(data);
+                // console.log(this);
+                // console.log(that);
             });
             // Simple Click
             that.div_base.find('#simple').on('click', function (e) {
@@ -117,12 +118,13 @@ define(["require", "exports", "jquery", "msgbox"], function (require, exports, $
                     };
                     that.msg.show_alert(opc);
                     //
-                    /* var alerta: IDivAlert = {
+                    var alerta = {
                         mensaje: 'Ejemplo Flash',
                         tiempo: 5000,
                         clase: 'alert-danger'
-                    }
-                    that.msg.div_alert(alerta); */
+                    };
+                    /* that.msg.div_alert(alerta); */
+                    that.alert.div_alert(alerta);
                 });
                 that.msg.show_login(login_data);
             });

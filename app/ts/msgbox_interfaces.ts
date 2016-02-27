@@ -1,4 +1,4 @@
-// Interfaces 1.4.2
+// Interfaces 1.5.0
 enum EMsgBox {
 		Yes,
 		No,
