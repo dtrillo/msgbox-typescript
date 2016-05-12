@@ -152,6 +152,25 @@ define(["require", "exports", "jquery", "msgbox", "flash_msg"], function (requir
                     console.log('Cambia passw: ' + cadena);
                 });
             });
+            // InputBox 1.7.0
+            // Ejemplo Cambia Pass
+            that.div_base.find('#inputbox').on('click', function (e) {
+                e.preventDefault();
+                var opc = {
+                    modal_header_class: 'modal-header-success',
+                    boton_cerrar: true,
+                    titulo: 'Pregunta ...',
+                    mensaje: 'Cómo te llamas?',
+                    placeholder: 'Pon tu nombre!!',
+                    valor: '',
+                    btn_class: 'btn-success',
+                    txt_boton_cerrar: 'OK',
+                };
+                that.msg.inputbox(opc);
+                that.msg.InputBoxValue.on(function (cadena) {
+                    console.log('recibido: ' + cadena);
+                });
+            });
         };
         return MenuApp;
     })();

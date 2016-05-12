@@ -2,16 +2,18 @@
 /// <reference path="../typings/bootstrap.d.ts" />
 /// <reference path="interfaces.ts" />
 /// <reference path="LiteEvent.ts" />
-define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbox", "hbs!msgbox_templates/login", "hbs!msgbox_templates/cambiapass", "hbs!msgbox_templates/yesno"], function (require, exports, $, LiteEvent) {
+define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbox", "hbs!msgbox_templates/login", "hbs!msgbox_templates/cambiapass", "hbs!msgbox_templates/yesno", "hbs!msgbox_templates/inputbox"], function (require, exports, $, LiteEvent) {
     /// <amd-dependency path="hbs!msgbox_templates/msgbox" />
     /// <amd-dependency path="hbs!msgbox_templates/login" />
     /// <amd-dependency path="hbs!msgbox_templates/cambiapass" />
     /// <amd-dependency path="hbs!msgbox_templates/yesno" />
-    var __UPDATED__ = '2016.02.10';
-    var __VERSION__ = "1.6.0";
+    /// <amd-dependency path="hbs!msgbox_templates/inputbox" />
+    var __UPDATED__ = '2016.04.26';
+    var __VERSION__ = "1.7.0";
     var __AUTHOR__ = 'David Trillo';
     var __WEBSITE__ = '';
     var MsgBoxTemplate = require('hbs!msgbox_templates/msgbox');
+    var InputBoxTemplate = require('hbs!msgbox_templates/inputbox');
     var LoginTemplate = require('hbs!msgbox_templates/login');
     var CambiaPassTemplate = require('hbs!msgbox_templates/cambiapass');
     var YesNoTemplate = require('hbs!msgbox_templates/yesno');
@@ -29,6 +31,7 @@ define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbo
             this.onLogout = new LiteEvent();
             this.onChangePass = new LiteEvent();
             this.onYesNoCancel = new LiteEvent();
+            this.onInputBox = new LiteEvent();
             if (div_base == undefined) {
                 this.base = $('<div id="msgbox_container" />').appendTo('body');
             }
@@ -59,6 +62,11 @@ define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbo
         });
         Object.defineProperty(MsgBox.prototype, "YesNoCancel", {
             get: function () { return this.onYesNoCancel; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(MsgBox.prototype, "InputBoxValue", {
+            get: function () { return this.onInputBox; },
             enumerable: true,
             configurable: true
         });
@@ -103,6 +111,14 @@ define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbo
                 that.onAlert.trigger(true);
                 that.onAlert = new LiteEvent();
             });
+        };
+        MsgBox.prototype.hide_alert = function () {
+            var that = this;
+            var div = "#msgbox";
+            var div_msg = that.msgbox.find(div);
+            div_msg.modal(that._h);
+            div_msg.html('');
+            that.onAlert = new LiteEvent();
         };
         // Login MsgBOX
         MsgBox.prototype.show_login = function (opc) {
@@ -170,9 +186,9 @@ define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbo
             form.find('input').on('keypress', function (e) {
                 if (e && e.keyCode == 13) {
                     e.preventDefault();
-                    if (that._valida_login(form)) {
+                    if (that._valida_cambiapass(form)) {
                         btn.trigger('click');
-                    }
+                    } // 1.6.1
                 }
             });
             btn.on('click', function (e) {
@@ -182,8 +198,10 @@ define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbo
                 form.modal(that._h);
                 var que = that._valida_cambiapass(subform); // Que devuelve 0 si no hace nada, 1 si es OK y 2 si hay error!
                 if (que == 1) {
-                    that.onChangePass.trigger(cadena);
-                    that.onChangePass = new LiteEvent();
+                    setTimeout(function () {
+                        that.onChangePass.trigger(cadena);
+                        that.onChangePass = new LiteEvent(); // 1.6.2
+                    }, 200);
                 }
                 else if (que == 2) {
                     var aler = that._valida_opciones_msgbox(opc.alert_change_password_error);
@@ -237,6 +255,23 @@ define(["require", "exports", "jquery", "liteevent", "hbs!msgbox_templates/msgbo
                 e.preventDefault();
                 div_msg.modal(that._h);
                 that.onYesNoCancel.trigger(2);
+            });
+        };
+        // InputBox 1.7.0 
+        MsgBox.prototype.inputbox = function (opc) {
+            var div = "#msgbox";
+            var that = this;
+            var tmp = InputBoxTemplate(opc);
+            that.msgbox.html(tmp);
+            var div_msg = that.msgbox.find(div);
+            div_msg.modal(that._s);
+            div_msg.find('#btn_inputbox').on('click', function (e) {
+                e.preventDefault();
+                div_msg.modal(that._h);
+                var valor = div_msg.find('#valor').val();
+                div_msg.html('');
+                that.onInputBox.trigger(valor);
+                that.onInputBox = new LiteEvent();
             });
         };
         return MsgBox;

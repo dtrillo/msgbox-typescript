@@ -7,9 +7,10 @@
 /// <amd-dependency path="hbs!msgbox_templates/login" />
 /// <amd-dependency path="hbs!msgbox_templates/cambiapass" />
 /// <amd-dependency path="hbs!msgbox_templates/yesno" />
+/// <amd-dependency path="hbs!msgbox_templates/inputbox" />
 
-var __UPDATED__ = '2016.02.10';
-var __VERSION__ = "1.6.0";
+var __UPDATED__ = '2016.04.26';
+var __VERSION__ = "1.7.0";
 var __AUTHOR__ = 'David Trillo';
 var __WEBSITE__ = '';
 
@@ -18,6 +19,7 @@ import $ = require("jquery");
 import LiteEvent = require("liteevent");
 
 var MsgBoxTemplate:Function = require('hbs!msgbox_templates/msgbox');
+var InputBoxTemplate:Function = require('hbs!msgbox_templates/inputbox');
 var LoginTemplate:Function = require('hbs!msgbox_templates/login');
 var CambiaPassTemplate:Function = require('hbs!msgbox_templates/cambiapass');
 var YesNoTemplate:Function = require('hbs!msgbox_templates/yesno');
@@ -43,12 +45,14 @@ class MsgBox {
     private onLogout = new LiteEvent<void>();     
 	private onChangePass = new LiteEvent<{}>();     
 	private onYesNoCancel = new LiteEvent<EMsgBox>();
+	private onInputBox = new LiteEvent<string>();     
 	
 	public get AlertOK(): ILiteEvent<boolean> { return this.onAlert; } 
     public get LoggedIn(): ILiteEvent<{}> { return this.onLogin; } 
     public get LoggedOut(): ILiteEvent<void> { return this.onLogout; }
     public get PassChanged(): ILiteEvent<{}> { return this.onChangePass; }
     public get YesNoCancel(): ILiteEvent<EMsgBox> { return this.onYesNoCancel; }
+    public get InputBoxValue(): ILiteEvent<string> { return this.onInputBox; }
     
 	// Funciones privadas
 	private _creadiv(nombre): JQuery {
@@ -96,7 +100,14 @@ class MsgBox {
 			that.onAlert = new LiteEvent<boolean>();
 		});
 	}
-	
+	public hide_alert() { // 1.6.2
+		var that = this;
+		var div = "#msgbox";
+		var div_msg = that.msgbox.find(div);
+		div_msg.modal(that._h);
+		div_msg.html('');
+		that.onAlert = new LiteEvent<boolean>();
+	}
 	// Login MsgBOX
 	show_login(opc: ILogin): void {
 		var that = this;
@@ -162,7 +173,7 @@ class MsgBox {
 		form.find('input').on('keypress', function(e) {
 			if(e && e.keyCode == 13) {
 			e.preventDefault();
-				if (that._valida_login(form)) {	btn.trigger('click'); }
+				if (that._valida_cambiapass(form)) {	btn.trigger('click'); } // 1.6.1
 			}
 		})
 		btn.on('click', (e) => { 
@@ -172,8 +183,12 @@ class MsgBox {
 			form.modal(that._h);
 			var que: number = that._valida_cambiapass(subform); // Que devuelve 0 si no hace nada, 1 si es OK y 2 si hay error!
 			if (que == 1) { // Si todo es correcto!
-				that.onChangePass.trigger(cadena);
-				that.onChangePass = new LiteEvent<{}>(); }
+				setTimeout( () => { 
+        			that.onChangePass.trigger(cadena);
+					that.onChangePass = new LiteEvent<{}>(); // 1.6.2
+        		}, 200);
+				
+				 }
 			else if (que == 2){
 				var aler: IAlert = that._valida_opciones_msgbox(opc.alert_change_password_error);
 				setTimeout(() => { that.show_alert(aler); }, delay);
@@ -233,40 +248,24 @@ class MsgBox {
 		});
 		
 	}
-	/* DEPRECATED 1.6.0 moved to Flash_msg
-	// DIV alert - Version 1.2.1
-	set_div_alert(div: string, defaultclass: string = "alert-warning") { // 1.4.5
-		this._div_alert = $(div);
-		this.div_alert_stop();
-		this._div_alert.removeClass('hide'); // 1.4.5
-		this.extraclassdefault = defaultclass;
-		this._div_alert.find('.alert').addClass(this.extraclassdefault);
-		this._div_alert.on('click', (e) => { this.div_alert_stop() })
-	}
-	// div_alert(html: string, timer: number = 0, clase: string="") { // DEPRECATED 1.4.6
-	div_alert(opc: IDivAlert) {
+	
+	// InputBox 1.7.0 
+	public inputbox(opc: IInputBox) {
+		var div = "#msgbox";
 		var that = this;
-		if (opc["clase"] == undefined) { opc.clase = "";}
-		if (opc["tiempo"] == undefined) { opc.tiempo = 0}
-		if (opc.clase.length > 0) { // 1.4.6
-			that.extraclass = opc.clase;
-			that._div_alert.find('.alert').removeClass(that.extraclassdefault).addClass(that.extraclass);
-		}
-		that._div_alert.show();
-		that._div_alert_close_btn = that._div_alert.find('button');
-		var _msg = that._div_alert.find('#mensaje');
-		_msg.html(opc.mensaje);
-		if (opc.tiempo > 0) { setTimeout( () => { that.div_alert_stop(); }, opc.tiempo);	}
-		that._div_alert_close_btn.on('click', (e) => { that.div_alert_stop();}) // 1.4.6
-	}
-	div_alert_stop() {
-		var that = this;
-		this._div_alert.hide(); // 1.4.6
-		if (this.extraclass.length > 0) {
-			that._div_alert.find('.alert').removeClass(that.extraclass).addClass(that.extraclassdefault)
-			this.extraclass = "";
-		}
+		var tmp = InputBoxTemplate(opc);
+		that.msgbox.html(tmp);
+		var div_msg = that.msgbox.find(div);
+		div_msg.modal(that._s);
 		
-	} */
+		div_msg.find('#btn_inputbox').on('click', (e) => { 
+			e.preventDefault();
+			div_msg.modal(that._h);
+			var valor = div_msg.find('#valor').val();
+			div_msg.html('');
+			that.onInputBox.trigger(valor);	
+			that.onInputBox = new LiteEvent<string>();
+		});
+	}
 }	
 export = MsgBox ;

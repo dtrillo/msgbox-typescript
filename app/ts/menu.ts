@@ -170,6 +170,27 @@ class MenuApp {
         		console.log('Cambia passw: ' + cadena);
         	})
         });
+        
+        
+        // InputBox 1.7.0
+        // Ejemplo Cambia Pass
+        that.div_base.find('#inputbox').on('click', (e) => {
+        	e.preventDefault();
+        	var opc: IInputBox  = { // IInputBox
+        		modal_header_class: 'modal-header-success',
+        		boton_cerrar: true,
+        		titulo: 'Pregunta ...',
+        		mensaje: 'Cómo te llamas?',
+        		placeholder: 'Pon tu nombre!!',
+        		valor: '',
+        		btn_class: 'btn-success',
+        		txt_boton_cerrar: 'OK',
+        	}
+        	that.msg.inputbox(opc);
+        	that.msg.InputBoxValue.on((cadena) => {
+        		console.log('recibido: ' + cadena);
+        	})
+        });
 	}    
 }
 

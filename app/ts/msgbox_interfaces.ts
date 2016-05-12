@@ -1,4 +1,4 @@
-// Interfaces 1.5.0
+// Interfaces 1.7.0
 enum EMsgBox {
 		Yes,
 		No,
@@ -70,5 +70,15 @@ interface IDivAlert {
 	mensaje: string,
 	tiempo?: number,
 	clase?: string
+}
+interface IInputBox { 
+        		modal_header_class: string,
+        		boton_cerrar: Boolean,
+        		titulo: string,
+        		mensaje: string,
+        		placeholder: string,
+        		valor: string|number,
+        		btn_class: string,
+        		txt_boton_cerrar: string,
 }
 // ***** MsgBox Interfaces - FIN

@@ -1,4 +1,4 @@
-// Interfaces 1.5.0
+// Interfaces 1.7.0
 var EMsgBox;
 (function (EMsgBox) {
     EMsgBox[EMsgBox["Yes"] = 0] = "Yes";
